@@ -34,6 +34,28 @@ class EmailControllerIntegrationTest {
     ObjectMapper objectMapper;
 
     @Test
+    void testFindEmailEndpoint_returnsEmailById() throws Exception {
+        //given: expected result
+        final var expectedEmail = new EmailDto(1L, "Welcome!", "Hello and welcome to our service.", EmailState.DRAFT, "admin@example.com", List.of("user1@example.com", "user2@example.com"));
+
+        // when: call the endpoint
+        final String contentAsString = mockMvc.perform(get("/emails/1").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        final EmailDto actualEmail = objectMapper.readValue(contentAsString, EmailDto.class);
+
+        // then: result should match expected email
+        assertEquals(expectedEmail, actualEmail);
+    }
+
+    @Test
+    void testFindEmailEndpoint_returnsNotFoundForNonExistentEmail() throws Exception {
+        // when: call the endpoint with a non-existent email ID
+        mockMvc.perform(get("/emails/999").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void testFindAllEmailsEndpoint_returnsInsertedEmails() throws Exception {
         //given: expected result
         final var expectedEmails = List.of(

@@ -10,18 +10,17 @@ import org.springframework.stereotype.Service;
 class EmailService {
 
     private final EmailRepository emailRepository;
+    private final EmailEntityToDtoMapper emailEntityToDtoMapper;
 
     Page<EmailDto> findAll(Pageable pagable) {
         return emailRepository.findAll(pagable)
-                .map((emailEntity) ->
-                        new EmailDto(
-                                emailEntity.getId(),
-                                emailEntity.getSubject(),
-                                emailEntity.getBody(),
-                                emailEntity.getState(),
-                                emailEntity.getFrom(),
-                                emailEntity.getTo()
-                        )
-                );
+                .map(emailEntityToDtoMapper::map);
+    }
+
+    EmailDto findById(Long id) throws NoSuchEmailException {
+        return emailEntityToDtoMapper.map(
+                emailRepository.findById(id)
+                        .orElseThrow(() -> new NoSuchEmailException(id))
+        );
     }
 }
