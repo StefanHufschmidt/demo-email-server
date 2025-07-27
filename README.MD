@@ -8,7 +8,9 @@ use case for this project should show a simple email server.
 - Docker
 
 ### Run the project within test environment
-Alternatively you can run the test application `info.deckermail.demoemailserver.TestDemoEmailServerApplication.main`
+1. Adjust the `src/test/resources/application.yml` file and set the wanted `spam-email.address` to the one you'd like 
+   the email server to use for spam emails.
+2. Run the test application `info.deckermail.demoemailserver.TestDemoEmailServerApplication.main`
 directly. It will spin up the application and the pre-configured Postgres DB in a test environment.
 
 ### Run the project with Docker Compose
@@ -17,11 +19,13 @@ directly. It will spin up the application and the pre-configured Postgres DB in 
    ```bash
    ./mvnw spring-boot:build-image -Dspring-boot.build-image.imageName=deckermail/demo-email-server
    ```
-3. Start the application together with the required Postgres DB using Docker Compose:
+3. Adjust the `application-dc.yml` file and set the wanted `spam-email.address` to the one you'd like the email server
+   to use for spam emails.
+4. Start the application together with the required Postgres DB using Docker Compose:
    ```bash
    docker compose up
    ```
-4. The application should now be running at http://localhost:8080. You can check the health of the application by
+5. The application should now be running at http://localhost:8080. You can check the health of the application by
    opening http://localhost:8080/actuator/health in your browser.
 
 ## API Documentation
@@ -40,3 +44,8 @@ that I'm aware of them and that I'm able to handle them differently, I list them
 - **Tests/TDD:** The project contains a number of tests which should confidentially cover the most important 
   functionality. However, they are not complete and are not written in a TDD manner. I know how to build a project in 
   TDD style, but it takes me more time than adding some functional tests for the core logic.
+- **Huge data amounts:** The project is made by the principle of "keep it simple and stupid". This also means that not 
+  every bit of code is optimized for large data amounts. E.g.: The email spam detection is done by querying over all 
+  emails. This could block other database queries and could be done by chunking the deletions and processing them with 
+  a small delay if necessary. However, this would also add complexity to the code and is not necessary for a demo 
+  project.

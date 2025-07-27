@@ -4,3 +4,7 @@ spring:
   threads:
     virtual:
       enabled: true
+
+spam-email:
+  address: billing@example.com
+  cron: "0 0 10 * * *"

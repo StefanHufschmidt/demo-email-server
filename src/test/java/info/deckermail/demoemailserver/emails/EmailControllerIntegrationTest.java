@@ -44,7 +44,7 @@ class EmailControllerIntegrationTest {
     @Test
     void testFindEmailEndpoint_returnsEmailById() throws Exception {
         //given: expected result
-        final var expectedEmail = new EmailDto(1L, "Welcome!", "Hello and welcome to our service.", EmailState.DRAFT, "admin@example.com", List.of("user1@example.com", "user2@example.com"));
+        final var expectedEmail = new EmailDto(1L, "Welcome!", "Hello and welcome to our service.", EmailState.DRAFT, "admin@example.com", List.of("user1@example.com", "user2@example.com", "billing@example.com"));
 
         // when: call the endpoint
         final String contentAsString = mockMvc.perform(get("/emails/1").contentType(MediaType.APPLICATION_JSON))
@@ -67,7 +67,7 @@ class EmailControllerIntegrationTest {
     void testFindAllEmailsEndpoint_returnsInsertedEmails() throws Exception {
         //given: expected result
         final var expectedEmails = List.of(
-                new EmailDto(1L, "Welcome!", "Hello and welcome to our service.", EmailState.DRAFT, "admin@example.com", List.of("user1@example.com", "user2@example.com")),
+                new EmailDto(1L, "Welcome!", "Hello and welcome to our service.", EmailState.DRAFT, "admin@example.com", List.of("user1@example.com", "user2@example.com", "billing@example.com")),
                 new EmailDto(2L, "Your Invoice", "Please find attached your invoice.", EmailState.SENT, "billing@example.com", List.of("user2@example.com")),
                 new EmailDto(3L, "Delivery Issue", "We could not deliver your email.", EmailState.DELETED, "support@example.com", List.of("user3@example.com")),
                 new EmailDto(4L, "Password Reset", "Click here to reset your password.", EmailState.SPAM, "security@example.com", List.of("user4@example.com", "user2@example.com"))

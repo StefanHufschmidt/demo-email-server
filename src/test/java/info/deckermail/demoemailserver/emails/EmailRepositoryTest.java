@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Import(TestcontainersConfiguration.class)
 @DataJpaTest
+@DirtiesContext
 @AutoConfigureTestDatabase
 @Sql(scripts = {
         "classpath:insert_emails.sql"
@@ -41,7 +43,7 @@ class EmailRepositoryTest {
         assertEquals("Welcome!", mail1.getSubject());
         assertEquals("Hello and welcome to our service.", mail1.getBody());
         assertEquals("admin@example.com", mail1.getFrom());
-        assertArrayEquals(new String[]{"user1@example.com", "user2@example.com"}, mail1.getTo().toArray());
+        assertArrayEquals(new String[]{"user1@example.com", "user2@example.com", "billing@example.com"}, mail1.getTo().toArray());
 
         final var mail2 = emailEntities.get(1);
         assertEquals(2L, mail2.getId());
