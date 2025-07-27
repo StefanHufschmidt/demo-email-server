@@ -37,3 +37,6 @@ that I'm aware of them and that I'm able to handle them differently, I list them
   inserted. Since there are so many different email formats, this is not a trivial task. From my point of view, only
   email addresses which already received an email, and you know that are valid email addresses. See 
   https://stackoverflow.com/a/201378 for more information.
+- **Tests/TDD:** The project contains a number of tests which should confidentially cover the most important 
+  functionality. However, they are not complete and are not written in a TDD manner. I know how to build a project in 
+  TDD style, but it takes me more time than adding some functional tests for the core logic.

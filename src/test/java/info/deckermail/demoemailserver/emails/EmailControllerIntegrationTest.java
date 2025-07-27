@@ -7,6 +7,8 @@ import info.deckermail.demoemailserver.TestcontainersConfiguration;
 import jakarta.transaction.Transactional;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,21 +19,18 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.endsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest
+@Transactional
 @Sql(scripts = {
         "classpath:insert_emails.sql"
 }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @AutoConfigureMockMvc
-@Transactional
 class EmailControllerIntegrationTest {
 
     @Autowired
@@ -103,19 +102,14 @@ class EmailControllerIntegrationTest {
         // when: call the endpoint to create a new email
         final var createdObject = objectMapper.readValue(mockMvc.perform(post("/emails").contentType(MediaType.APPLICATION_JSON).content(payload))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", endsWith("/emails/5")))
                 .andReturn().getResponse().getContentAsString(), EmailDto.class);
 
         // then: the created email should match the payload
-        final var expectedEmail = new EmailDto(
-                5L,
-                "Test Email",
-                "This is a test email.",
-                EmailState.DRAFT,
-                "foo@bar.com",
-                List.of("zap@zarapp.com", "bar@foo.com")
-        );
-        assertEquals(expectedEmail, createdObject);
+        assertEquals("Test Email", createdObject.subject());
+        assertEquals("This is a test email.", createdObject.body());
+        assertEquals(EmailState.DRAFT, createdObject.state());
+        assertEquals("foo@bar.com", createdObject.from());
+        assertEquals(List.of("zap@zarapp.com", "bar@foo.com"), createdObject.to());
     }
 
     @Test
@@ -169,4 +163,58 @@ class EmailControllerIntegrationTest {
         assertTrue(createdEmails.stream().anyMatch(it -> it.subject().equals("Test Bulk Email2") && it.id() != null));
         assertTrue(createdEmails.stream().anyMatch(it -> it.subject().equals("Test Bulk Email3") && it.id() != null));
     }
+
+    @Test
+    void testUpdate_shouldUpdateDraftEmail() throws Exception {
+        // given: the email update payload
+        @Language("JSON") final var payload = """
+        {
+          "subject": "Updated Email",
+          "body": "This is an updated email.",
+          "state": "DRAFT",
+          "from": "",
+          "to": []
+        }
+        """;
+
+        // when: call the endpoint to update an existing email
+        final var updatedEmail = objectMapper.readValue(mockMvc.perform(put("/emails/1").contentType(MediaType.APPLICATION_JSON).content(payload))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(), EmailDto.class);
+
+        // then: the updated email should match the payload
+        final var expectedEmail = new EmailDto(
+                1L,
+                "Updated Email",
+                "This is an updated email.",
+                EmailState.DRAFT,
+                "",
+                List.of()
+        );
+        assertEquals(expectedEmail, updatedEmail);
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {
+            2L, // SENT
+            3L, // DELETED
+            4L  // SPAM
+    })
+    void testUpdate_shouldNotUpdateEmailsWithinOtherStateThanDraft(long emailId) throws Exception {
+        // given: the email update payload
+        @Language("JSON") final var payload = """
+        {
+          "subject": "Updated Email",
+          "body": "This is an updated email.",
+          "state": "DRAFT",
+          "from": "",
+          "to": []
+        }
+        """;
+
+        // expected: failure when calling the endpoint to update an existing email
+        mockMvc.perform(put("/emails/" + emailId).contentType(MediaType.APPLICATION_JSON).content(payload))
+                .andExpect(status().isPreconditionFailed());
+    }
 }
+

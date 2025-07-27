@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.Instant;
 import java.util.Collection;
 
 @AllArgsConstructor
@@ -25,5 +27,7 @@ class EmailEntity {
     private String from;
     @Column(name = "\"to\"")
     private Collection<String> to;
+    @UpdateTimestamp
+    private Instant lastModified;
 
 }

@@ -1,16 +1,19 @@
 package info.deckermail.demoemailserver.emails;
 
-import jakarta.validation.Valid;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 class EmailService {
 
     private final EmailRepository emailRepository;
@@ -35,13 +38,15 @@ class EmailService {
                 request.subject(),
                 request.body(),
                 request.from(),
-                request.to()
+                request.to(),
+                Instant.now()
         );
         return emailEntityToDtoMapper.map(
                 emailRepository.save(emailEntity)
         );
     }
 
+    @Transactional
     Collection<EmailDto> createBulk(EmailBulkCreationRequest request) {
         var mailsToBeCreated = request.emails().stream()
                 .map(email -> new EmailEntity(
@@ -50,7 +55,8 @@ class EmailService {
                         email.subject(),
                         email.body(),
                         email.from(),
-                        email.to()
+                        email.to(),
+                        Instant.now()
                 ))
                 .toList();
         var savedMails = emailRepository.saveAll(mailsToBeCreated);
@@ -60,5 +66,22 @@ class EmailService {
                 .map(n -> iterator.next())
                 .map(emailEntityToDtoMapper::map)
                 .toList();
+    }
+
+    EmailDto update(Long existingEmailId, EmailUpdateRequest request) throws NoSuchEmailException, EmailUpdateFailedException {
+        var emailEntity = emailRepository.findById(existingEmailId).orElseThrow(() -> new NoSuchEmailException(existingEmailId));
+        if (emailEntity.getState() != EmailState.DRAFT) {
+            log.warn("Attempt to update email with ID {} that is not in DRAFT state.", existingEmailId);
+            throw new EmailUpdateFailedException(existingEmailId);
+        }
+
+        emailEntity.setBody(request.body());
+        emailEntity.setSubject(request.subject());
+        emailEntity.setTo(request.to());
+        emailEntity.setFrom(request.from());
+        emailEntity.setState(request.state());
+        return emailEntityToDtoMapper.map(
+                emailRepository.save(emailEntity)
+        );
     }
 }

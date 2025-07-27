@@ -1,3 +1,6 @@
 spring:
   liquibase:
     change-log: classpath:db/changelog.sql
+  threads:
+    virtual:
+      enabled: true

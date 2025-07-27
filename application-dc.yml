@@ -5,3 +5,6 @@ spring:
     password: demo_password
     username: demo_user
     url: jdbc:postgresql://postgres:5432/demo_db
+  threads:
+    virtual:
+      enabled: true

@@ -12,7 +12,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.List;
 
 @RestController
 @RequestMapping("/emails")
@@ -22,10 +21,17 @@ class EmailController {
 
     private final EmailService emailService;
 
-    @ExceptionHandler
+    @ExceptionHandler(NoSuchEmailException.class)
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
     void handleNotFoundException(NoSuchEmailException e) {
         log.warn("Email with ID {} not found.", e.getEmailId());
+        log.debug("Exception details: ", e);
+    }
+
+    @ExceptionHandler(EmailUpdateFailedException.class)
+    @ResponseStatus(code = HttpStatus.PRECONDITION_FAILED)
+    void handleUpdateFailedException(EmailUpdateFailedException e) {
+        log.warn("Email update failed for ID {}.", e.getEmailId());
         log.debug("Exception details: ", e);
     }
 
@@ -55,5 +61,10 @@ class EmailController {
     @ResponseStatus(HttpStatus.CREATED)
     Collection<EmailDto> create(@Valid @RequestBody EmailBulkCreationRequest request) {
         return emailService.createBulk(request);
+    }
+
+    @PutMapping("/{id}")
+    EmailDto update(@PathVariable Long id, @Valid @RequestBody EmailUpdateRequest request) throws NoSuchEmailException, EmailUpdateFailedException {
+        return emailService.update(id, request);
     }
 }
