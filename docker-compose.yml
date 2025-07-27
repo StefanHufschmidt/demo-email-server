@@ -1,0 +1,29 @@
+services:
+  demo-email-server:
+    image: deckermail/demo-email-server
+    container_name: demo-email-server
+    ports:
+      - "8080:8080"
+    networks:
+      - demo-network
+    volumes:
+      - ./application-dc.yml:/app/application.yml
+    environment:
+      SPRING_CONFIG_LOCATION: "file:/app/application.yml"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:latest
+    container_name: demo-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: demo_user
+      POSTGRES_PASSWORD: demo_password
+      POSTGRES_DB: demo_db
+    networks:
+      - demo-network
+
+networks:
+  demo-network:

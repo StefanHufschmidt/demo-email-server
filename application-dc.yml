@@ -1,0 +1,7 @@
+spring:
+  liquibase:
+    change-log: classpath:db/changelog.sql
+  datasource:
+    password: demo_password
+    username: demo_user
+    url: jdbc:postgresql://postgres:5432/demo_db
