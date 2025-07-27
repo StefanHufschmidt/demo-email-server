@@ -26,3 +26,10 @@ directly. It will spin up the application and the pre-configured Postgres DB in 
 
 ## API Documentation
 The API documentation is available at http://localhost:8080/swagger-ui/index.html.
+
+# Shortcuts
+Due to external time constraints, the project contains several shortcuts which should be avoided in production. To show 
+that I'm aware of them and that I'm able to handle them differently, I list them here:
+- In a more complex scenario, it would make sense to lift the email recipient and sender into a separate entity. This
+  would allow reusing the same email address for multiple emails easily and make the storage of emails more efficient.
+  This would also include some more mapping logic for saving emails and querying them. 
