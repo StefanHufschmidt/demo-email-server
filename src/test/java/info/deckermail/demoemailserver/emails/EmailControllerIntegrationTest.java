@@ -168,6 +168,36 @@ class EmailControllerIntegrationTest {
     }
 
     @Test
+    void testUpdate_shouldUpdateDraftEmailAndReturn() throws Exception {
+        // given: the email update payload
+        @Language("JSON") final var payload = """
+        {
+          "subject": "Updated Email",
+          "body": "This is an updated email.",
+          "state": "DRAFT",
+          "from": "",
+          "to": []
+        }
+        """;
+
+        // when: call the endpoint to update an existing email
+        final var updatedEmail = objectMapper.readValue(mockMvc.perform(post("/emails/1").contentType(MediaType.APPLICATION_JSON).content(payload))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(), EmailDto.class);
+
+        // then: the updated email should match the payload
+        final var expectedEmail = new EmailDto(
+                1L,
+                "Updated Email",
+                "This is an updated email.",
+                EmailState.DRAFT,
+                "",
+                List.of()
+        );
+        assertEquals(expectedEmail, updatedEmail);
+    }
+
+    @Test
     void testUpdate_shouldUpdateDraftEmail() throws Exception {
         // given: the email update payload
         @Language("JSON") final var payload = """
@@ -181,11 +211,13 @@ class EmailControllerIntegrationTest {
         """;
 
         // when: call the endpoint to update an existing email
-        final var updatedEmail = objectMapper.readValue(mockMvc.perform(put("/emails/1").contentType(MediaType.APPLICATION_JSON).content(payload))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(), EmailDto.class);
+        mockMvc.perform(put("/emails/1").contentType(MediaType.APPLICATION_JSON).content(payload))
+                .andExpect(status().isOk());
 
         // then: the updated email should match the payload
+        final var updatedEmail = objectMapper.readValue(mockMvc.perform(get("/emails/1").contentType(MediaType.APPLICATION_JSON).content(payload))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(), EmailDto.class);
         final var expectedEmail = new EmailDto(
                 1L,
                 "Updated Email",

@@ -64,7 +64,12 @@ class EmailController {
     }
 
     @PutMapping("/{id}")
-    EmailDto update(@PathVariable Long id, @Valid @RequestBody EmailUpdateRequest request) throws NoSuchEmailException, EmailUpdateFailedException {
+    void update(@PathVariable Long id, @Valid @RequestBody EmailUpdateRequest request) throws NoSuchEmailException, EmailUpdateFailedException {
+        emailService.update(id, request);
+    }
+
+    @PostMapping("/{id}")
+    EmailDto updateAndReturn(@PathVariable Long id, @Valid @RequestBody EmailUpdateRequest request) throws NoSuchEmailException, EmailUpdateFailedException {
         return emailService.update(id, request);
     }
 
