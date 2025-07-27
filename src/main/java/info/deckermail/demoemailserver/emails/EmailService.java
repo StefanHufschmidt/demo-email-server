@@ -25,7 +25,7 @@ class EmailService {
                 .map(emailEntityToDtoMapper::map);
     }
 
-    EmailResponse findById(Long id) throws NoSuchEmailException {
+    EmailResponse findById(long id) throws NoSuchEmailException {
         return emailEntityToDtoMapper.map(
                 emailRepository.findById(id)
                         .orElseThrow(() -> new NoSuchEmailException(id))
@@ -69,7 +69,7 @@ class EmailService {
                 .toList();
     }
 
-    EmailResponse update(Long existingEmailId, EmailUpdateRequest request) throws NoSuchEmailException, EmailUpdateFailedException {
+    EmailResponse update(long existingEmailId, EmailUpdateRequest request) throws NoSuchEmailException, EmailUpdateFailedException {
         var emailEntity = emailRepository.findById(existingEmailId).orElseThrow(() -> new NoSuchEmailException(existingEmailId));
         if (emailEntity.getState() != EmailState.DRAFT) {
             log.warn("Attempt to update email with ID {} that is not in DRAFT state.", existingEmailId);

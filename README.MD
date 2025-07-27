@@ -27,6 +27,10 @@ directly. It will spin up the application and the pre-configured Postgres DB in 
    ```
 5. The application should now be running at http://localhost:8080. You can check the health of the application by
    opening http://localhost:8080/actuator/health in your browser.
+6. After exploring the application, you can stop it by running:
+   ```bash
+   docker compose down -v
+   ```
 
 ## API Documentation
 The API documentation is available at http://localhost:8080/swagger-ui/index.html.
