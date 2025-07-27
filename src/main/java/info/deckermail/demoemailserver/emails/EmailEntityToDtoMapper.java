@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 @Component
 class EmailEntityToDtoMapper {
 
-    EmailDto map(EmailEntity emailEntity) {
-        return new EmailDto(
+    EmailResponse map(EmailEntity emailEntity) {
+        return new EmailResponse(
                 emailEntity.getId(),
                 emailEntity.getSubject(),
                 emailEntity.getBody(),

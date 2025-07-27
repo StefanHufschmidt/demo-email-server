@@ -20,19 +20,19 @@ class EmailService {
     private final EmailRepository emailRepository;
     private final EmailEntityToDtoMapper emailEntityToDtoMapper;
 
-    Page<EmailDto> findAll(Pageable pagable) {
+    Page<EmailResponse> findAll(Pageable pagable) {
         return emailRepository.findAll(pagable)
                 .map(emailEntityToDtoMapper::map);
     }
 
-    EmailDto findById(Long id) throws NoSuchEmailException {
+    EmailResponse findById(Long id) throws NoSuchEmailException {
         return emailEntityToDtoMapper.map(
                 emailRepository.findById(id)
                         .orElseThrow(() -> new NoSuchEmailException(id))
         );
     }
 
-    EmailDto create(EmailCreationRequest request) {
+    EmailResponse create(EmailCreationRequest request) {
         EmailEntity emailEntity = new EmailEntity(
                 null,
                 request.state(),
@@ -48,7 +48,7 @@ class EmailService {
     }
 
     @Transactional
-    Collection<EmailDto> createBulk(EmailBulkCreationRequest request) {
+    Collection<EmailResponse> createBulk(EmailBulkCreationRequest request) {
         var mailsToBeCreated = request.emails().stream()
                 .map(email -> new EmailEntity(
                         null,
@@ -69,7 +69,7 @@ class EmailService {
                 .toList();
     }
 
-    EmailDto update(Long existingEmailId, EmailUpdateRequest request) throws NoSuchEmailException, EmailUpdateFailedException {
+    EmailResponse update(Long existingEmailId, EmailUpdateRequest request) throws NoSuchEmailException, EmailUpdateFailedException {
         var emailEntity = emailRepository.findById(existingEmailId).orElseThrow(() -> new NoSuchEmailException(existingEmailId));
         if (emailEntity.getState() != EmailState.DRAFT) {
             log.warn("Attempt to update email with ID {} that is not in DRAFT state.", existingEmailId);

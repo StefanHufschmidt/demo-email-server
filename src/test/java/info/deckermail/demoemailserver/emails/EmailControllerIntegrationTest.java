@@ -44,13 +44,13 @@ class EmailControllerIntegrationTest {
     @Test
     void testFindEmailEndpoint_returnsEmailById() throws Exception {
         //given: expected result
-        final var expectedEmail = new EmailDto(1L, "Welcome!", "Hello and welcome to our service.", EmailState.DRAFT, "admin@example.com", List.of("user1@example.com", "user2@example.com", "billing@example.com"));
+        final var expectedEmail = new EmailResponse(1L, "Welcome!", "Hello and welcome to our service.", EmailState.DRAFT, "admin@example.com", List.of("user1@example.com", "user2@example.com", "billing@example.com"));
 
         // when: call the endpoint
         final String contentAsString = mockMvc.perform(get("/emails/1").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        final EmailDto actualEmail = objectMapper.readValue(contentAsString, EmailDto.class);
+        final EmailResponse actualEmail = objectMapper.readValue(contentAsString, EmailResponse.class);
 
         // then: result should match expected email
         assertEquals(expectedEmail, actualEmail);
@@ -67,10 +67,10 @@ class EmailControllerIntegrationTest {
     void testFindAllEmailsEndpoint_returnsInsertedEmails() throws Exception {
         //given: expected result
         final var expectedEmails = List.of(
-                new EmailDto(1L, "Welcome!", "Hello and welcome to our service.", EmailState.DRAFT, "admin@example.com", List.of("user1@example.com", "user2@example.com", "billing@example.com")),
-                new EmailDto(2L, "Your Invoice", "Please find attached your invoice.", EmailState.SENT, "billing@example.com", List.of("user2@example.com")),
-                new EmailDto(3L, "Delivery Issue", "We could not deliver your email.", EmailState.DELETED, "support@example.com", List.of("user3@example.com")),
-                new EmailDto(4L, "Password Reset", "Click here to reset your password.", EmailState.SPAM, "security@example.com", List.of("user4@example.com", "user2@example.com"))
+                new EmailResponse(1L, "Welcome!", "Hello and welcome to our service.", EmailState.DRAFT, "admin@example.com", List.of("user1@example.com", "user2@example.com", "billing@example.com")),
+                new EmailResponse(2L, "Your Invoice", "Please find attached your invoice.", EmailState.SENT, "billing@example.com", List.of("user2@example.com")),
+                new EmailResponse(3L, "Delivery Issue", "We could not deliver your email.", EmailState.DELETED, "support@example.com", List.of("user3@example.com")),
+                new EmailResponse(4L, "Password Reset", "Click here to reset your password.", EmailState.SPAM, "security@example.com", List.of("user4@example.com", "user2@example.com"))
         );
 
         // when: call the endpoint
@@ -78,7 +78,7 @@ class EmailControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         final JsonNode node = objectMapper.readTree(contentAsString);
-        final List<EmailDto> returnedEmails = objectMapper.treeToValue(node.get("content"), new TypeReference<List<EmailDto>>() {});
+        final List<EmailResponse> returnedEmails = objectMapper.treeToValue(node.get("content"), new TypeReference<List<EmailResponse>>() {});
 
         // then: result should include correct emails
         assertEquals(expectedEmails, returnedEmails);
@@ -105,7 +105,7 @@ class EmailControllerIntegrationTest {
         final var createdObject = objectMapper.readValue(mockMvc.perform(post("/emails").contentType(MediaType.APPLICATION_JSON).content(payload))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", endsWith("/emails/5")))
-                .andReturn().getResponse().getContentAsString(), EmailDto.class);
+                .andReturn().getResponse().getContentAsString(), EmailResponse.class);
 
         // then: the created email should match the payload
         assertEquals("Test Email", createdObject.subject());
@@ -159,7 +159,7 @@ class EmailControllerIntegrationTest {
         // when: call the endpoint to create bulk emails
         final var createdEmails = objectMapper.readValue(mockMvc.perform(post("/emails/bulk").contentType(MediaType.APPLICATION_JSON).content(payload))
                 .andExpect(status().isCreated())
-                .andReturn().getResponse().getContentAsString(), new TypeReference<List<EmailDto>>() {});
+                .andReturn().getResponse().getContentAsString(), new TypeReference<List<EmailResponse>>() {});
 
         // then: the created emails should match the payload
         assertTrue(createdEmails.stream().anyMatch(it -> it.subject().equals("Test Bulk Email") && it.id() != null));
@@ -183,10 +183,10 @@ class EmailControllerIntegrationTest {
         // when: call the endpoint to update an existing email
         final var updatedEmail = objectMapper.readValue(mockMvc.perform(post("/emails/1").contentType(MediaType.APPLICATION_JSON).content(payload))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(), EmailDto.class);
+                .andReturn().getResponse().getContentAsString(), EmailResponse.class);
 
         // then: the updated email should match the payload
-        final var expectedEmail = new EmailDto(
+        final var expectedEmail = new EmailResponse(
                 1L,
                 "Updated Email",
                 "This is an updated email.",
@@ -217,8 +217,8 @@ class EmailControllerIntegrationTest {
         // then: the updated email should match the payload
         final var updatedEmail = objectMapper.readValue(mockMvc.perform(get("/emails/1").contentType(MediaType.APPLICATION_JSON).content(payload))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString(), EmailDto.class);
-        final var expectedEmail = new EmailDto(
+                .andReturn().getResponse().getContentAsString(), EmailResponse.class);
+        final var expectedEmail = new EmailResponse(
                 1L,
                 "Updated Email",
                 "This is an updated email.",

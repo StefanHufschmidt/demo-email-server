@@ -2,7 +2,7 @@ package info.deckermail.demoemailserver.emails;
 
 import java.util.Collection;
 
-record EmailDto (
+record EmailResponse(
     Long id,
     String subject,
     String body,

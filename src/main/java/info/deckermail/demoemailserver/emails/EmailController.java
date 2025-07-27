@@ -36,18 +36,18 @@ class EmailController {
     }
 
     @GetMapping("/{id}")
-    EmailDto findById(@PathVariable Long id) throws NoSuchEmailException {
+    EmailResponse findById(@PathVariable Long id) throws NoSuchEmailException {
         return emailService.findById(id);
     }
 
     @GetMapping
-    Page<EmailDto> findAll(Pageable pagable) {
+    Page<EmailResponse> findAll(Pageable pagable) {
         return emailService.findAll(pagable);
     }
 
     @PostMapping
-    ResponseEntity<EmailDto> create(@Valid @RequestBody EmailCreationRequest request) {
-        final EmailDto createdEmail = emailService.create(request);
+    ResponseEntity<EmailResponse> create(@Valid @RequestBody EmailCreationRequest request) {
+        final EmailResponse createdEmail = emailService.create(request);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
@@ -59,7 +59,7 @@ class EmailController {
 
     @PostMapping("/bulk")
     @ResponseStatus(HttpStatus.CREATED)
-    Collection<EmailDto> create(@Valid @RequestBody EmailBulkCreationRequest request) {
+    Collection<EmailResponse> create(@Valid @RequestBody EmailBulkCreationRequest request) {
         return emailService.createBulk(request);
     }
 
@@ -69,7 +69,7 @@ class EmailController {
     }
 
     @PostMapping("/{id}")
-    EmailDto updateAndReturn(@PathVariable Long id, @Valid @RequestBody EmailUpdateRequest request) throws NoSuchEmailException, EmailUpdateFailedException {
+    EmailResponse updateAndReturn(@PathVariable Long id, @Valid @RequestBody EmailUpdateRequest request) throws NoSuchEmailException, EmailUpdateFailedException {
         return emailService.update(id, request);
     }
 
