@@ -23,4 +23,18 @@ class EmailService {
                         .orElseThrow(() -> new NoSuchEmailException(id))
         );
     }
+
+    EmailDto create(EmailCreationRequest request) {
+        EmailEntity emailEntity = new EmailEntity(
+                null,
+                request.state(),
+                request.subject(),
+                request.body(),
+                request.from(),
+                request.to()
+        );
+        return emailEntityToDtoMapper.map(
+                emailRepository.save(emailEntity)
+        );
+    }
 }

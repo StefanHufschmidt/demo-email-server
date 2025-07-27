@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.deckermail.demoemailserver.TestcontainersConfiguration;
+import jakarta.transaction.Transactional;
+import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,8 +17,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.endsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Import(TestcontainersConfiguration.class)
@@ -25,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "classpath:insert_emails.sql"
 }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @AutoConfigureMockMvc
+@Transactional
 class EmailControllerIntegrationTest {
 
     @Autowired
@@ -74,5 +80,40 @@ class EmailControllerIntegrationTest {
 
         // then: result should include correct emails
         assertEquals(expectedEmails, returnedEmails);
+    }
+
+    @Test
+    void testCreateEmailEndpoint_shouldAddEmail() throws Exception {
+        // given: the email creation payload
+        @Language("JSON")
+        final var payload = """
+        {
+          "subject": "Test Email",
+          "body": "This is a test email.",
+          "state": "DRAFT",
+          "from": "foo@bar.com",
+          "to": [
+            "zap@zarapp.com",
+            "bar@foo.com"
+          ]
+        }
+        """;
+
+        // when: call the endpoint to create a new email
+        final var createdObject = objectMapper.readValue(mockMvc.perform(post("/emails").contentType(MediaType.APPLICATION_JSON).content(payload))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", endsWith("/emails/5")))
+                .andReturn().getResponse().getContentAsString(), EmailDto.class);
+
+        // then: the created email should match the payload
+        final var expectedEmail = new EmailDto(
+                5L,
+                "Test Email",
+                "This is a test email.",
+                EmailState.DRAFT,
+                "foo@bar.com",
+                List.of("zap@zarapp.com", "bar@foo.com")
+        );
+        assertEquals(expectedEmail, createdObject);
     }
 }

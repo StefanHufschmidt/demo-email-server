@@ -1,6 +1,6 @@
 package info.deckermail.demoemailserver.emails;
 
-public enum EmailState {
+enum EmailState {
     DRAFT,
     SENT,
     DELETED,

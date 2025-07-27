@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Collection;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,13 +15,15 @@ import java.util.List;
 class EmailEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Enumerated(EnumType.STRING)
     private EmailState state;
     private String subject;
     private String body;
+    @Column(name = "\"from\"")
     private String from;
-    private List<String> to;
+    @Column(name = "\"to\"")
+    private Collection<String> to;
 
 }
