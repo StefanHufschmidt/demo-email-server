@@ -1,9 +1,13 @@
 package info.deckermail.demoemailserver.emails;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -36,5 +40,25 @@ class EmailService {
         return emailEntityToDtoMapper.map(
                 emailRepository.save(emailEntity)
         );
+    }
+
+    Collection<EmailDto> createBulk(EmailBulkCreationRequest request) {
+        var mailsToBeCreated = request.emails().stream()
+                .map(email -> new EmailEntity(
+                        null,
+                        email.state(),
+                        email.subject(),
+                        email.body(),
+                        email.from(),
+                        email.to()
+                ))
+                .toList();
+        var savedMails = emailRepository.saveAll(mailsToBeCreated);
+        var iterator = savedMails.iterator();
+        return Stream.generate(() -> null)
+                .takeWhile(x -> iterator.hasNext())
+                .map(n -> iterator.next())
+                .map(emailEntityToDtoMapper::map)
+                .toList();
     }
 }

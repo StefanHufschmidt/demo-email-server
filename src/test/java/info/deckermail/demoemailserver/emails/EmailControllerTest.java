@@ -73,4 +73,20 @@ class EmailControllerTest {
                         .content(payload.replace("$$EMAIL$$", "a".repeat(256) + "@example.com")))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void testCreateBulkEmail_inputValidation_emptyList() throws Exception {
+        // given: invalid bulk email creation payload with null state
+        @Language("JSON") final var payload = """
+        {
+          "emails": []
+        }
+        """;
+
+        // expect: validation error for empty email list
+        mockMvc.perform(post("/emails/bulk")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload))
+                .andExpect(status().isBadRequest());
+    }
 }

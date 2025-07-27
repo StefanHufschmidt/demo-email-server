@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -48,5 +49,11 @@ class EmailController {
                 .toUri();
 
         return ResponseEntity.created(location).body(createdEmail);
+    }
+
+    @PostMapping("/bulk")
+    @ResponseStatus(HttpStatus.CREATED)
+    Collection<EmailDto> create(@Valid @RequestBody EmailBulkCreationRequest request) {
+        return emailService.createBulk(request);
     }
 }

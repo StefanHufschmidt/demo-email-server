@@ -19,6 +19,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.endsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -115,5 +116,57 @@ class EmailControllerIntegrationTest {
                 List.of("zap@zarapp.com", "bar@foo.com")
         );
         assertEquals(expectedEmail, createdObject);
+    }
+
+    @Test
+    void testCreateBulkEmailEndpoint_shouldAddBulkEmails() throws Exception {
+        // given: the bulk email creation payload
+        @Language("JSON") final var payload = """
+        
+                {
+            "emails": [
+              {
+                  "subject": "Test Bulk Email",
+                  "body": "This is a test email.",
+                  "state": "DRAFT",
+                  "from": "foo@bar.com",
+                  "to": [
+                    "zap@zarapp.com",
+                    "bar@foo.com"
+                  ]
+              },
+              {
+                  "subject": "Test Bulk Email2",
+                  "body": "This is a test email.2",
+                  "state": "DRAFT",
+                  "from": "foo@bar.com",
+                  "to": [
+                    "zap@zarapp.com",
+                    "bar@foo.com"
+                  ]
+              },
+              {
+                  "subject": "Test Bulk Email3",
+                  "body": "This is a test email.3",
+                  "state": "DRAFT",
+                  "from": "foo@bar.com",
+                  "to": [
+                    "zap@zarapp.com",
+                    "bar@foo.com"
+                  ]
+              }
+            ]
+        }
+        """;
+
+        // when: call the endpoint to create bulk emails
+        final var createdEmails = objectMapper.readValue(mockMvc.perform(post("/emails/bulk").contentType(MediaType.APPLICATION_JSON).content(payload))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString(), new TypeReference<List<EmailDto>>() {});
+
+        // then: the created emails should match the payload
+        assertTrue(createdEmails.stream().anyMatch(it -> it.subject().equals("Test Bulk Email") && it.id() != null));
+        assertTrue(createdEmails.stream().anyMatch(it -> it.subject().equals("Test Bulk Email2") && it.id() != null));
+        assertTrue(createdEmails.stream().anyMatch(it -> it.subject().equals("Test Bulk Email3") && it.id() != null));
     }
 }
