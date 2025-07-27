@@ -67,4 +67,16 @@ class EmailController {
     EmailDto update(@PathVariable Long id, @Valid @RequestBody EmailUpdateRequest request) throws NoSuchEmailException, EmailUpdateFailedException {
         return emailService.update(id, request);
     }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void delete(@PathVariable long id) {
+        emailService.delete(id);
+    }
+
+    @DeleteMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void delete(@RequestBody @Valid EmailBulkDeletionRequest request) {
+        emailService.delete(request);
+    }
 }

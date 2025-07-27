@@ -19,9 +19,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.endsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Import(TestcontainersConfiguration.class)
@@ -29,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @Sql(scripts = {
         "classpath:insert_emails.sql"
-}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @AutoConfigureMockMvc
 class EmailControllerIntegrationTest {
 
@@ -102,6 +104,7 @@ class EmailControllerIntegrationTest {
         // when: call the endpoint to create a new email
         final var createdObject = objectMapper.readValue(mockMvc.perform(post("/emails").contentType(MediaType.APPLICATION_JSON).content(payload))
                 .andExpect(status().isCreated())
+                .andExpect(header().string("Location", endsWith("/emails/5")))
                 .andReturn().getResponse().getContentAsString(), EmailDto.class);
 
         // then: the created email should match the payload
@@ -215,6 +218,51 @@ class EmailControllerIntegrationTest {
         // expected: failure when calling the endpoint to update an existing email
         mockMvc.perform(put("/emails/" + emailId).contentType(MediaType.APPLICATION_JSON).content(payload))
                 .andExpect(status().isPreconditionFailed());
+    }
+
+    @Test
+    void testDelete_shouldDeleteEmail() throws Exception {
+        // when: call the endpoint to delete an existing email
+        mockMvc.perform(delete("/emails/1").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+
+        // then: the email should no longer be found
+        mockMvc.perform(get("/emails/1").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testDelete_shouldDeleteNonExistingEmail() throws Exception {
+        // expect: call the endpoint to delete an existing email will not fail on already deleted email
+        mockMvc.perform(delete("/emails/999").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testDelete_shouldBulkDeleteEmails() throws Exception {
+        // given: the bulk email deletion payload
+        @Language("JSON") final var payload = """
+        {
+          "emailIds": [
+            2,
+            3,
+            4,
+            5
+          ]
+        }
+        """;
+
+        // when: call the endpoint to delete an existing email
+        mockMvc.perform(delete("/emails").contentType(MediaType.APPLICATION_JSON).content(payload))
+                .andExpect(status().isNoContent());
+
+        // then: the emails should no longer be found
+        mockMvc.perform(get("/emails/2").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/emails/3").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/emails/4").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 }
 

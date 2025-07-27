@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 @Service
@@ -83,5 +84,20 @@ class EmailService {
         return emailEntityToDtoMapper.map(
                 emailRepository.save(emailEntity)
         );
+    }
+
+    void delete(long id) {
+        emailRepository.deleteById(id);
+        log.info("Deleted email with ID {}", id);
+    }
+
+    @Transactional
+    void delete(EmailBulkDeletionRequest request) {
+        // Thanks for the reminder that Kotlin makes the world a better place.
+        final var emailsToDelete = request.emailIds().stream().filter(Objects::nonNull).toList();
+        if (!emailsToDelete.isEmpty()) {
+            emailRepository.deleteAllById(emailsToDelete);
+            log.info("Deleted {} emails.", emailsToDelete.size());
+        }
     }
 }
