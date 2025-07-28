@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -18,54 +17,39 @@ import java.util.stream.Stream;
 class EmailService {
 
     private final EmailRepository emailRepository;
-    private final EmailEntityToDtoMapper emailEntityToDtoMapper;
+    private final EmailEntityMapper emailEntityMapper;
 
     Page<EmailResponse> findAll(Pageable pagable) {
         return emailRepository.findAll(pagable)
-                .map(emailEntityToDtoMapper::map);
+                .map(emailEntityMapper::mapToResponse);
     }
 
     EmailResponse findById(long id) throws NoSuchEmailException {
-        return emailEntityToDtoMapper.map(
+        return emailEntityMapper.mapToResponse(
                 emailRepository.findById(id)
                         .orElseThrow(() -> new NoSuchEmailException(id))
         );
     }
 
     EmailResponse create(EmailCreationRequest request) {
-        EmailEntity emailEntity = new EmailEntity(
-                null,
-                request.state(),
-                request.subject(),
-                request.body(),
-                request.from(),
-                request.to(),
-                Instant.now()
-        );
-        return emailEntityToDtoMapper.map(
-                emailRepository.save(emailEntity)
+        return emailEntityMapper.mapToResponse(
+                emailRepository.save(
+                        emailEntityMapper.mapFromCreationRequest(request)
+                )
         );
     }
 
     @Transactional
     Collection<EmailResponse> createBulk(EmailBulkCreationRequest request) {
         var mailsToBeCreated = request.emails().stream()
-                .map(email -> new EmailEntity(
-                        null,
-                        email.state(),
-                        email.subject(),
-                        email.body(),
-                        email.from(),
-                        email.to(),
-                        Instant.now()
-                ))
+                .map(emailEntityMapper::mapFromCreationRequest)
                 .toList();
         var savedMails = emailRepository.saveAll(mailsToBeCreated);
         var iterator = savedMails.iterator();
         return Stream.generate(() -> null)
-                .takeWhile(x -> iterator.hasNext())
-                .map(n -> iterator.next())
-                .map(emailEntityToDtoMapper::map)
+                .takeWhile(_ -> iterator.hasNext())
+                .map(_ -> iterator.next())
+                .map(emailEntityMapper::mapToResponse)
                 .toList();
     }
 
@@ -81,7 +65,7 @@ class EmailService {
         emailEntity.setTo(request.to());
         emailEntity.setFrom(request.from());
         emailEntity.setState(request.state());
-        return emailEntityToDtoMapper.map(
+        return emailEntityMapper.mapToResponse(
                 emailRepository.save(emailEntity)
         );
     }

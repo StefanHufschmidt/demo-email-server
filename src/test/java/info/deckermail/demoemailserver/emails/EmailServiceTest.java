@@ -26,7 +26,7 @@ class EmailServiceTest {
     @Mock
     private EmailRepository emailRepository;
     @Mock
-    private EmailEntityToDtoMapper emailEntityToDtoMapper;
+    private EmailEntityMapper emailEntityMapper;
     @InjectMocks
     private EmailService emailService;
 
@@ -37,13 +37,13 @@ class EmailServiceTest {
         EmailResponse response = mock(EmailResponse.class);
         Page<EmailEntity> entityPage = new PageImpl<>(Collections.singletonList(entity));
         when(emailRepository.findAll(pageable)).thenReturn(entityPage);
-        when(emailEntityToDtoMapper.map(entity)).thenReturn(response);
+        when(emailEntityMapper.mapToResponse(entity)).thenReturn(response);
 
         Page<EmailResponse> result = emailService.findAll(pageable);
 
         assertThat(result.getContent()).containsExactly(response);
         verify(emailRepository).findAll(pageable);
-        verify(emailEntityToDtoMapper).map(entity);
+        verify(emailEntityMapper).mapToResponse(entity);
     }
 
     @Test
@@ -52,13 +52,13 @@ class EmailServiceTest {
         EmailEntity entity = mock(EmailEntity.class);
         EmailResponse response = mock(EmailResponse.class);
         when(emailRepository.findById(id)).thenReturn(Optional.of(entity));
-        when(emailEntityToDtoMapper.map(entity)).thenReturn(response);
+        when(emailEntityMapper.mapToResponse(entity)).thenReturn(response);
 
         EmailResponse result = emailService.findById(id);
 
         assertThat(result).isEqualTo(response);
         verify(emailRepository).findById(id);
-        verify(emailEntityToDtoMapper).map(entity);
+        verify(emailEntityMapper).mapToResponse(entity);
     }
 
     @Test
@@ -71,16 +71,19 @@ class EmailServiceTest {
     @Test
     void create_shouldSaveAndMapEmail() {
         EmailCreationRequest request = mock(EmailCreationRequest.class);
+        EmailEntity entity = mock(EmailEntity.class);
         EmailEntity savedEntity = mock(EmailEntity.class);
         EmailResponse response = mock(EmailResponse.class);
-        when(emailRepository.save(any(EmailEntity.class))).thenReturn(savedEntity);
-        when(emailEntityToDtoMapper.map(savedEntity)).thenReturn(response);
+        when(emailEntityMapper.mapFromCreationRequest(request)).thenReturn(entity);
+        when(emailRepository.save(entity)).thenReturn(savedEntity);
+        when(emailEntityMapper.mapToResponse(savedEntity)).thenReturn(response);
 
         EmailResponse result = emailService.create(request);
 
         assertThat(result).isEqualTo(response);
-        verify(emailRepository).save(any(EmailEntity.class));
-        verify(emailEntityToDtoMapper).map(savedEntity);
+        verify(emailEntityMapper).mapFromCreationRequest(request);
+        verify(emailRepository).save(entity);
+        verify(emailEntityMapper).mapToResponse(savedEntity);
     }
 
     @Test
@@ -91,13 +94,13 @@ class EmailServiceTest {
         EmailEntity entity = mock(EmailEntity.class);
         when(emailRepository.saveAll(anyCollection())).thenReturn(List.of(entity));
         EmailResponse response = mock(EmailResponse.class);
-        when(emailEntityToDtoMapper.map(entity)).thenReturn(response);
+        when(emailEntityMapper.mapToResponse(entity)).thenReturn(response);
 
         var result = emailService.createBulk(bulkRequest);
 
         assertThat(result).containsExactly(response);
         verify(emailRepository).saveAll(anyCollection());
-        verify(emailEntityToDtoMapper).map(entity);
+        verify(emailEntityMapper).mapToResponse(entity);
     }
 
     @Test
@@ -110,14 +113,14 @@ class EmailServiceTest {
         EmailEntity savedEntity = mock(EmailEntity.class);
         when(emailRepository.save(entity)).thenReturn(savedEntity);
         EmailResponse response = mock(EmailResponse.class);
-        when(emailEntityToDtoMapper.map(savedEntity)).thenReturn(response);
+        when(emailEntityMapper.mapToResponse(savedEntity)).thenReturn(response);
 
         EmailResponse result = emailService.update(id, request);
 
         assertThat(result).isEqualTo(response);
         verify(emailRepository).findById(id);
         verify(emailRepository).save(entity);
-        verify(emailEntityToDtoMapper).map(savedEntity);
+        verify(emailEntityMapper).mapToResponse(savedEntity);
     }
 
     @Test
