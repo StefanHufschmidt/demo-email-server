@@ -65,7 +65,7 @@ class EmailController {
     @Operation(
             description = "Creat an email entry",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Email successfully created, see body for details"),
+                    @ApiResponse(responseCode = "201", description = "Email successfully created, see body for details"),
                     @ApiResponse(responseCode = "400", description = "Invalid request, see body for details"),
             }
     )
@@ -84,7 +84,7 @@ class EmailController {
     @Operation(
             description = "Creat multiple email entries",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Emails successfully created, see body for details"),
+                    @ApiResponse(responseCode = "201", description = "Emails successfully created, see body for details"),
                     @ApiResponse(responseCode = "400", description = "Invalid request, see body for details"),
             }
     )
