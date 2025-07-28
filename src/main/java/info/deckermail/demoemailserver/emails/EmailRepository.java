@@ -14,7 +14,7 @@ interface EmailRepository extends PagingAndSortingRepository<EmailEntity, Long>,
     @Modifying
     int markEmailsAsSpamByFromEmail(@Param("spamEmail") String spamEmail);
 
-    @Query(value = "UPDATE emails SET state = 'SPAM' WHERE :spamEmail ILIKE any(\"to\")", nativeQuery = true)
+    @Query(value = "UPDATE emails SET state = 'SPAM' WHERE id IN (SELECT r.email_id FROM receivers r INNER JOIN participants p ON p.id = r.participant_id WHERE p.address ILIKE :spamEmail)", nativeQuery = true)
     @Modifying
     int markEmailsAsSpamByToEmail(@Param("spamEmail") String spamEmail);
 

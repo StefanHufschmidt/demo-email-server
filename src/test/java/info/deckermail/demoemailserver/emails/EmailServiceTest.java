@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -74,12 +75,15 @@ class EmailServiceTest {
     void create_shouldSaveAndMapEmail() {
         EmailCreationRequest request = mock(EmailCreationRequest.class);
         ParticipantEntity fromParticipant = mock(ParticipantEntity.class);
+        Set<ParticipantEntity> toParticipants = Set.of(mock(ParticipantEntity.class));
         EmailEntity mappedEntity = mock(EmailEntity.class);
         EmailEntity savedEntity = mock(EmailEntity.class);
         EmailResponse response = mock(EmailResponse.class);
         when(request.from()).thenReturn("foo@bar.com");
+        when(request.to()).thenReturn(List.of("bar@foo.com"));
         when(participantService.getOrCreateParticipant("foo@bar.com")).thenReturn(fromParticipant);
-        when(emailEntityMapper.mapFromCreationRequest(request, fromParticipant)).thenReturn(mappedEntity);
+        when(participantService.getOrCreateParticipants(List.of("bar@foo.com"))).thenReturn(toParticipants);
+        when(emailEntityMapper.mapFromCreationRequest(request, fromParticipant, toParticipants)).thenReturn(mappedEntity);
         when(emailRepository.save(mappedEntity)).thenReturn(savedEntity);
         when(emailEntityMapper.mapToResponse(savedEntity)).thenReturn(response);
 
@@ -87,7 +91,8 @@ class EmailServiceTest {
 
         assertThat(result).isEqualTo(response);
         verify(participantService).getOrCreateParticipant("foo@bar.com");
-        verify(emailEntityMapper).mapFromCreationRequest(request, fromParticipant);
+        verify(participantService).getOrCreateParticipants(List.of("bar@foo.com"));
+        verify(emailEntityMapper).mapFromCreationRequest(request, fromParticipant, toParticipants);
         verify(emailRepository).save(mappedEntity);
         verify(emailEntityMapper).mapToResponse(savedEntity);
     }

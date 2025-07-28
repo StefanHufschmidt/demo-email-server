@@ -3,6 +3,8 @@ package info.deckermail.demoemailserver.emails;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 class EmailEntityMapper {
@@ -14,18 +16,18 @@ class EmailEntityMapper {
                 emailEntity.getBody(),
                 emailEntity.getState(),
                 emailEntity.getFrom().getAddress(),
-                emailEntity.getTo()
+                emailEntity.getTo().stream().map(ParticipantEntity::getAddress).collect(Collectors.toSet())
         );
     }
 
-    EmailEntity mapFromCreationRequest(EmailCreationRequest request, ParticipantEntity from) {
+    EmailEntity mapFromCreationRequest(EmailCreationRequest request, ParticipantEntity from, Set<ParticipantEntity> receivers) {
         return new EmailEntity(
                 null,
                 request.state(),
                 request.subject(),
                 request.body(),
                 from,
-                request.to(),
+                receivers,
                 Instant.now()
         );
     }

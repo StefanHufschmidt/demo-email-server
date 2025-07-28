@@ -13,8 +13,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Import(TestcontainersConfiguration.class)
@@ -43,7 +44,7 @@ class EmailRepositoryTest {
         assertEquals("Welcome!", mail1.getSubject());
         assertEquals("Hello and welcome to our service.", mail1.getBody());
         assertEquals("admin@example.com", mail1.getFrom().getAddress());
-        assertArrayEquals(new String[]{"user1@example.com", "user2@example.com", "billing@example.com"}, mail1.getTo().toArray());
+        assertEquals(Set.of("user1@example.com", "user2@example.com", "billing@example.com"), mail1.getTo().stream().map(ParticipantEntity::getAddress).collect(Collectors.toSet()));
 
         final var mail2 = emailEntities.get(1);
         assertEquals(2L, mail2.getId());
@@ -51,7 +52,7 @@ class EmailRepositoryTest {
         assertEquals("Your Invoice", mail2.getSubject());
         assertEquals("Please find attached your invoice.", mail2.getBody());
         assertEquals("billing@example.com", mail2.getFrom().getAddress());
-        assertArrayEquals(new String[]{"user2@example.com"}, mail2.getTo().toArray());
+        assertEquals(Set.of("user2@example.com"), mail2.getTo().stream().map(ParticipantEntity::getAddress).collect(Collectors.toSet()));
 
         final var mail3 = emailEntities.get(2);
         assertEquals(3L, mail3.getId());
@@ -59,7 +60,7 @@ class EmailRepositoryTest {
         assertEquals("Delivery Issue", mail3.getSubject());
         assertEquals("We could not deliver your email.", mail3.getBody());
         assertEquals("support@example.com", mail3.getFrom().getAddress());
-        assertArrayEquals(new String[]{"user3@example.com"}, mail3.getTo().toArray());
+        assertEquals(Set.of("user3@example.com"), mail3.getTo().stream().map(ParticipantEntity::getAddress).collect(Collectors.toSet()));
 
         final var mail4 = emailEntities.get(3);
         assertEquals(4L, mail4.getId());
@@ -67,7 +68,7 @@ class EmailRepositoryTest {
         assertEquals("Password Reset", mail4.getSubject());
         assertEquals("Click here to reset your password.", mail4.getBody());
         assertEquals("security@example.com", mail4.getFrom().getAddress());
-        assertArrayEquals(new String[]{"user4@example.com", "user2@example.com"}, mail4.getTo().toArray());
+        assertEquals(Set.of("user4@example.com", "user2@example.com"), mail4.getTo().stream().map(ParticipantEntity::getAddress).collect(Collectors.toSet()));
     }
 
 }

@@ -35,7 +35,11 @@ class EmailService {
     EmailResponse create(EmailCreationRequest request) {
         return emailEntityMapper.mapToResponse(
                 emailRepository.save(
-                        emailEntityMapper.mapFromCreationRequest(request, participantService.getOrCreateParticipant(request.from()))
+                        emailEntityMapper.mapFromCreationRequest(
+                                request,
+                                participantService.getOrCreateParticipant(request.from()),
+                                participantService.getOrCreateParticipants(request.to())
+                        )
                 )
         );
     }
@@ -44,7 +48,11 @@ class EmailService {
     Collection<EmailResponse> createBulk(EmailBulkCreationRequest request) {
         var mailsToBeCreated = request.emails().stream()
                 .map(it ->
-                        emailEntityMapper.mapFromCreationRequest(it, participantService.getOrCreateParticipant(it.from()))
+                        emailEntityMapper.mapFromCreationRequest(
+                                it,
+                                participantService.getOrCreateParticipant(it.from()),
+                                participantService.getOrCreateParticipants(it.to())
+                        )
                 )
                 .toList();
         var savedMails = emailRepository.saveAll(mailsToBeCreated);
@@ -65,7 +73,7 @@ class EmailService {
 
         emailEntity.setBody(request.body());
         emailEntity.setSubject(request.subject());
-        emailEntity.setTo(request.to());
+        emailEntity.setTo(participantService.getOrCreateParticipants(request.to()));
         emailEntity.setFrom(new ParticipantEntity(request.from()));
         emailEntity.setState(request.state());
         return emailEntityMapper.mapToResponse(

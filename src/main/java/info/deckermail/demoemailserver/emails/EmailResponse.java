@@ -2,7 +2,7 @@ package info.deckermail.demoemailserver.emails;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.util.Collection;
+import java.util.Set;
 
 record EmailResponse(
     @Schema(description = "The unique identifier of the email.")
@@ -16,5 +16,5 @@ record EmailResponse(
     @Schema(description = "The email sender address", example = "foo@bar.com")
     String from,
     @Schema(description = "The email recipients")
-    Collection<String> to
+    Set<String> to
 ) {}

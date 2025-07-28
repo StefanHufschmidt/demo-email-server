@@ -18,6 +18,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.Matchers.endsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,7 +45,7 @@ class EmailControllerIntegrationTest {
     @Test
     void testFindEmailEndpoint_returnsEmailById() throws Exception {
         //given: expected result
-        final var expectedEmail = new EmailResponse(1L, "Welcome!", "Hello and welcome to our service.", EmailState.DRAFT, "admin@example.com", List.of("user1@example.com", "user2@example.com", "billing@example.com"));
+        final var expectedEmail = new EmailResponse(1L, "Welcome!", "Hello and welcome to our service.", EmailState.DRAFT, "admin@example.com", Set.of("user1@example.com", "user2@example.com", "billing@example.com"));
 
         // when: call the endpoint
         final String contentAsString = mockMvc.perform(get("/emails/1").contentType(MediaType.APPLICATION_JSON))
@@ -67,10 +68,10 @@ class EmailControllerIntegrationTest {
     void testFindAllEmailsEndpoint_returnsInsertedEmails() throws Exception {
         //given: expected result
         final var expectedEmails = List.of(
-                new EmailResponse(1L, "Welcome!", "Hello and welcome to our service.", EmailState.DRAFT, "admin@example.com", List.of("user1@example.com", "user2@example.com", "billing@example.com")),
-                new EmailResponse(2L, "Your Invoice", "Please find attached your invoice.", EmailState.SENT, "billing@example.com", List.of("user2@example.com")),
-                new EmailResponse(3L, "Delivery Issue", "We could not deliver your email.", EmailState.DELETED, "support@example.com", List.of("user3@example.com")),
-                new EmailResponse(4L, "Password Reset", "Click here to reset your password.", EmailState.SPAM, "security@example.com", List.of("user4@example.com", "user2@example.com"))
+                new EmailResponse(1L, "Welcome!", "Hello and welcome to our service.", EmailState.DRAFT, "admin@example.com", Set.of("user1@example.com", "user2@example.com", "billing@example.com")),
+                new EmailResponse(2L, "Your Invoice", "Please find attached your invoice.", EmailState.SENT, "billing@example.com", Set.of("user2@example.com")),
+                new EmailResponse(3L, "Delivery Issue", "We could not deliver your email.", EmailState.DELETED, "support@example.com", Set.of("user3@example.com")),
+                new EmailResponse(4L, "Password Reset", "Click here to reset your password.", EmailState.SPAM, "security@example.com", Set.of("user4@example.com", "user2@example.com"))
         );
 
         // when: call the endpoint
@@ -112,7 +113,7 @@ class EmailControllerIntegrationTest {
         assertEquals("This is a test email.", createdObject.body());
         assertEquals(EmailState.DRAFT, createdObject.state());
         assertEquals("foo@bar.com", createdObject.from());
-        assertEquals(List.of("zap@zarapp.com", "bar@foo.com"), createdObject.to());
+        assertEquals(Set.of("zap@zarapp.com", "bar@foo.com"), createdObject.to());
     }
 
     @Test
@@ -192,7 +193,7 @@ class EmailControllerIntegrationTest {
                 "This is an updated email.",
                 EmailState.DRAFT,
                 "",
-                List.of()
+                Set.of()
         );
         assertEquals(expectedEmail, updatedEmail);
     }
@@ -224,7 +225,7 @@ class EmailControllerIntegrationTest {
                 "This is an updated email.",
                 EmailState.DRAFT,
                 "",
-                List.of()
+                Set.of()
         );
         assertEquals(expectedEmail, updatedEmail);
     }

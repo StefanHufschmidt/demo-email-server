@@ -40,3 +40,21 @@ ALTER TABLE emails ALTER COLUMN "from" TYPE BIGINT USING (null);
 ALTER TABLE emails
     ADD CONSTRAINT "email_participant_from_nullable_fkey" FOREIGN KEY ("from") REFERENCES participants ("id") ON UPDATE CASCADE ON DELETE SET NULL;
 -- rollback alter table client_report drop constraint email_participant_from_nullable_fkey cascade
+
+-- changeset emails:6
+-- preconditions onFail:MARK_RAN onError:MARK_RAN
+-- precondition-sql-check expectedResult:0 select count(*) from information_schema.tables where table_name = 'receivers'
+CREATE TABLE receivers (
+    participant_id BIGINT NOT NULL,
+    email_id BIGINT NOT NULL,
+    PRIMARY KEY (participant_id, email_id),
+    FOREIGN KEY (participant_id) REFERENCES participants (id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (email_id) REFERENCES emails (id) ON UPDATE CASCADE ON DELETE CASCADE
+);
+-- rollback drop table receivers
+
+-- changeset emails:7
+-- preconditions onFail:MARK_RAN onError:MARK_RAN
+-- precondition-sql-check expectedResult:1 select count(*) from information_schema.columns where table_name = 'emails' and column_name = 'to'
+ALTER TABLE emails DROP COLUMN "to";
+-- rollback alter table emails add column "to" varchar(255)[];

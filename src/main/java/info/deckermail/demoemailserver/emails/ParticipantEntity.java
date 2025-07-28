@@ -1,13 +1,20 @@
 package info.deckermail.demoemailserver.emails;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
+@ToString
 @Entity
 @Table(name = "participants")
 class ParticipantEntity {
@@ -34,6 +41,21 @@ class ParticipantEntity {
             orphanRemoval = true,
             targetEntity = EmailEntity.class
     )
-    private Collection<EmailEntity> emails;
+    private Collection<EmailEntity> writtenEmails;
 
+    @ManyToMany(mappedBy = "to")
+    private Set<EmailEntity> receivedEmails = new HashSet<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ParticipantEntity that = (ParticipantEntity) o;
+        return Objects.equals(address, that.address);
+    }
+
+    @Override
+    public int hashCode() {
+        return address != null ? address.hashCode() : 0;
+    }
 }

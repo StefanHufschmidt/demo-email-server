@@ -3,7 +3,8 @@ package info.deckermail.demoemailserver.emails;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,7 +23,7 @@ class EmailEntityMapperTest {
                 "subject",
                 "body",
                 new ParticipantEntity("from@example.com"),
-                List.of("to@example.com"),
+                Set.of(new ParticipantEntity("to@example.com")),
                 Instant.now()
         );
         EmailResponse response = mapper.mapToResponse(entity);
@@ -31,7 +32,7 @@ class EmailEntityMapperTest {
         assertThat(response.body()).isEqualTo(entity.getBody());
         assertThat(response.state()).isEqualTo(entity.getState());
         assertThat(response.from()).isEqualTo(entity.getFrom().getAddress());
-        assertThat(response.to()).isEqualTo(entity.getTo());
+        assertThat(response.to()).isEqualTo(entity.getTo().stream().map(ParticipantEntity::getAddress).collect(Collectors.toSet()));
     }
 
     @Test
@@ -41,15 +42,16 @@ class EmailEntityMapperTest {
                 "body2",
                 EmailState.SENT,
                 "from2@example.com",
-                List.of("to2@example.com")
+                Set.of("to2@example.com")
         );
-        EmailEntity entity = mapper.mapFromCreationRequest(request, new ParticipantEntity(request.from()));
+        EmailEntity entity = mapper.mapFromCreationRequest(request, new ParticipantEntity(request.from()),
+                request.to().stream().map(ParticipantEntity::new).collect(Collectors.toSet()));
         assertThat(entity.getId()).isNull();
         assertThat(entity.getState()).isEqualTo(request.state());
         assertThat(entity.getSubject()).isEqualTo(request.subject());
         assertThat(entity.getBody()).isEqualTo(request.body());
         assertThat(entity.getFrom().getAddress()).isEqualTo(request.from());
-        assertThat(entity.getTo()).isEqualTo(request.to());
+        assertThat(entity.getTo().stream().map(ParticipantEntity::getAddress).collect(Collectors.toSet())).isEqualTo(request.to());
         assertThat(entity.getLastModified()).isNotNull();
     }
 }
