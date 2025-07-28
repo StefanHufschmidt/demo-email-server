@@ -74,7 +74,7 @@ class EmailService {
         emailEntity.setBody(request.body());
         emailEntity.setSubject(request.subject());
         emailEntity.setTo(participantService.getOrCreateParticipants(request.to()));
-        emailEntity.setFrom(new ParticipantEntity(request.from()));
+        emailEntity.setFrom(participantService.getOrCreateParticipant(request.from()));
         emailEntity.setState(request.state());
         return emailEntityMapper.mapToResponse(
                 emailRepository.save(emailEntity)
