@@ -13,18 +13,18 @@ class EmailEntityMapper {
                 emailEntity.getSubject(),
                 emailEntity.getBody(),
                 emailEntity.getState(),
-                emailEntity.getFrom(),
+                emailEntity.getFrom().getAddress(),
                 emailEntity.getTo()
         );
     }
 
-    EmailEntity mapFromCreationRequest(EmailCreationRequest request) {
+    EmailEntity mapFromCreationRequest(EmailCreationRequest request, ParticipantEntity from) {
         return new EmailEntity(
                 null,
                 request.state(),
                 request.subject(),
                 request.body(),
-                request.from(),
+                from,
                 request.to(),
                 Instant.now()
         );

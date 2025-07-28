@@ -21,7 +21,7 @@ class EmailEntityMapperTest {
                 EmailState.DRAFT,
                 "subject",
                 "body",
-                "from@example.com",
+                new ParticipantEntity("from@example.com"),
                 List.of("to@example.com"),
                 Instant.now()
         );
@@ -30,7 +30,7 @@ class EmailEntityMapperTest {
         assertThat(response.subject()).isEqualTo(entity.getSubject());
         assertThat(response.body()).isEqualTo(entity.getBody());
         assertThat(response.state()).isEqualTo(entity.getState());
-        assertThat(response.from()).isEqualTo(entity.getFrom());
+        assertThat(response.from()).isEqualTo(entity.getFrom().getAddress());
         assertThat(response.to()).isEqualTo(entity.getTo());
     }
 
@@ -43,12 +43,12 @@ class EmailEntityMapperTest {
                 "from2@example.com",
                 List.of("to2@example.com")
         );
-        EmailEntity entity = mapper.mapFromCreationRequest(request);
+        EmailEntity entity = mapper.mapFromCreationRequest(request, new ParticipantEntity(request.from()));
         assertThat(entity.getId()).isNull();
         assertThat(entity.getState()).isEqualTo(request.state());
         assertThat(entity.getSubject()).isEqualTo(request.subject());
         assertThat(entity.getBody()).isEqualTo(request.body());
-        assertThat(entity.getFrom()).isEqualTo(request.from());
+        assertThat(entity.getFrom().getAddress()).isEqualTo(request.from());
         assertThat(entity.getTo()).isEqualTo(request.to());
         assertThat(entity.getLastModified()).isNotNull();
     }

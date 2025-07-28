@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 interface EmailRepository extends PagingAndSortingRepository<EmailEntity, Long>, CrudRepository<EmailEntity, Long> {
 
-    @Query(value = "UPDATE emails SET state = 'SPAM' WHERE \"from\" ILIKE :spamEmail", nativeQuery = true)
+    @Query(value = "UPDATE emails SET state = 'SPAM' WHERE \"from\" = (SELECT p.id FROM participants p WHERE p.address  ILIKE :spamEmail LIMIT 1)", nativeQuery = true)
     @Modifying
     int markEmailsAsSpamByFromEmail(@Param("spamEmail") String spamEmail);
 

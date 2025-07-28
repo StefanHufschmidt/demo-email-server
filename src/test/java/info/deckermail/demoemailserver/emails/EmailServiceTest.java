@@ -27,6 +27,8 @@ class EmailServiceTest {
     private EmailRepository emailRepository;
     @Mock
     private EmailEntityMapper emailEntityMapper;
+    @Mock
+    private ParticipantService participantService;
     @InjectMocks
     private EmailService emailService;
 
@@ -71,18 +73,22 @@ class EmailServiceTest {
     @Test
     void create_shouldSaveAndMapEmail() {
         EmailCreationRequest request = mock(EmailCreationRequest.class);
-        EmailEntity entity = mock(EmailEntity.class);
+        ParticipantEntity fromParticipant = mock(ParticipantEntity.class);
+        EmailEntity mappedEntity = mock(EmailEntity.class);
         EmailEntity savedEntity = mock(EmailEntity.class);
         EmailResponse response = mock(EmailResponse.class);
-        when(emailEntityMapper.mapFromCreationRequest(request)).thenReturn(entity);
-        when(emailRepository.save(entity)).thenReturn(savedEntity);
+        when(request.from()).thenReturn("foo@bar.com");
+        when(participantService.getOrCreateParticipant("foo@bar.com")).thenReturn(fromParticipant);
+        when(emailEntityMapper.mapFromCreationRequest(request, fromParticipant)).thenReturn(mappedEntity);
+        when(emailRepository.save(mappedEntity)).thenReturn(savedEntity);
         when(emailEntityMapper.mapToResponse(savedEntity)).thenReturn(response);
 
         EmailResponse result = emailService.create(request);
 
         assertThat(result).isEqualTo(response);
-        verify(emailEntityMapper).mapFromCreationRequest(request);
-        verify(emailRepository).save(entity);
+        verify(participantService).getOrCreateParticipant("foo@bar.com");
+        verify(emailEntityMapper).mapFromCreationRequest(request, fromParticipant);
+        verify(emailRepository).save(mappedEntity);
         verify(emailEntityMapper).mapToResponse(savedEntity);
     }
 

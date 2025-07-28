@@ -23,8 +23,9 @@ class EmailEntity {
     private EmailState state;
     private String subject;
     private String body;
-    @Column(name = "\"from\"")
-    private String from;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "\"from\"", referencedColumnName = "id")
+    private ParticipantEntity from;
     @Column(name = "\"to\"")
     private Collection<String> to;
     @UpdateTimestamp

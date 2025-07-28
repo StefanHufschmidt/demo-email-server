@@ -18,6 +18,7 @@ class EmailService {
 
     private final EmailRepository emailRepository;
     private final EmailEntityMapper emailEntityMapper;
+    private final ParticipantService participantService;
 
     Page<EmailResponse> findAll(Pageable pagable) {
         return emailRepository.findAll(pagable)
@@ -34,7 +35,7 @@ class EmailService {
     EmailResponse create(EmailCreationRequest request) {
         return emailEntityMapper.mapToResponse(
                 emailRepository.save(
-                        emailEntityMapper.mapFromCreationRequest(request)
+                        emailEntityMapper.mapFromCreationRequest(request, participantService.getOrCreateParticipant(request.from()))
                 )
         );
     }
@@ -42,7 +43,9 @@ class EmailService {
     @Transactional
     Collection<EmailResponse> createBulk(EmailBulkCreationRequest request) {
         var mailsToBeCreated = request.emails().stream()
-                .map(emailEntityMapper::mapFromCreationRequest)
+                .map(it ->
+                        emailEntityMapper.mapFromCreationRequest(it, participantService.getOrCreateParticipant(it.from()))
+                )
                 .toList();
         var savedMails = emailRepository.saveAll(mailsToBeCreated);
         var iterator = savedMails.iterator();
@@ -63,7 +66,7 @@ class EmailService {
         emailEntity.setBody(request.body());
         emailEntity.setSubject(request.subject());
         emailEntity.setTo(request.to());
-        emailEntity.setFrom(request.from());
+        emailEntity.setFrom(new ParticipantEntity(request.from()));
         emailEntity.setState(request.state());
         return emailEntityMapper.mapToResponse(
                 emailRepository.save(emailEntity)
