@@ -32,6 +32,7 @@ class EmailService {
         );
     }
 
+    @Transactional
     EmailResponse create(EmailCreationRequest request) {
         return emailEntityMapper.mapToResponse(
                 emailRepository.save(
@@ -64,6 +65,7 @@ class EmailService {
                 .toList();
     }
 
+    @Transactional
     EmailResponse update(long existingEmailId, EmailUpdateRequest request) throws NoSuchEmailException, EmailUpdateFailedException {
         var emailEntity = emailRepository.findById(existingEmailId).orElseThrow(() -> new NoSuchEmailException(existingEmailId));
         if (emailEntity.getState() != EmailState.DRAFT) {
@@ -86,7 +88,6 @@ class EmailService {
         log.info("Deleted email with ID {}", id);
     }
 
-    @Transactional
     void delete(EmailBulkDeletionRequest request) {
         // Thanks for the reminder that Kotlin makes the world a better place.
         final var emailsToDelete = request.emailIds().stream().filter(Objects::nonNull).toList();

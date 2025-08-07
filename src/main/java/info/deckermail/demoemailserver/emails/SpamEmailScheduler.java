@@ -1,5 +1,6 @@
 package info.deckermail.demoemailserver.emails;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,6 +22,7 @@ class SpamEmailScheduler {
     }
 
     @Scheduled(cron = "${spam-email.cron:0 0 10 * * *}")
+    @Transactional
     void markEmailsAsSpam() {
         log.info("Marking emails as spam for address: {}", spamEmailAddress);
 

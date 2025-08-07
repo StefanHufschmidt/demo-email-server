@@ -1,5 +1,6 @@
 package info.deckermail.demoemailserver.emails;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +14,14 @@ class ParticipantService {
 
     private final ParticipantRepository participantRepository;
 
+    @Transactional
     ParticipantEntity getOrCreateParticipant(String address) {
         return participantRepository.findByAddress(address)
                 .orElseGet(() -> participantRepository.save(new ParticipantEntity(address)));
     }
 
-    public Set<ParticipantEntity> getOrCreateParticipants(Collection<String> addresses) {
+    @Transactional
+    Set<ParticipantEntity> getOrCreateParticipants(Collection<String> addresses) {
         return addresses.stream()
                 .map(this::getOrCreateParticipant)
                 .collect(Collectors.toSet());
